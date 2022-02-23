@@ -1,42 +1,51 @@
 import React, { useEffect, useState } from 'react'
 import Switch from '@mui/material/Switch'
-import { FormControlLabel, FormGroup, TextField } from '@mui/material';
+import { Button, FormControlLabel, FormGroup, TextField } from '@mui/material';
+import { setting } from './setting';
 
 const BugFixer = (props) => {
-    const [bugAmount, setBugAmount] = useState(3);
-    const [items, setItems] = useState([]);
+    const [bugAmount, setBugAmount] = useState(setting.bugAmount);
+    const [bugs, setBugs] = useState([]);
 
     useEffect(() => {
-        setItems(new Array(bugAmount).fill(true));
+        setBugs(new Array(bugAmount).fill(true));
     }, []);
 
-    const randomizeItems = (targetIndex) => {
-        const newItems = items.map((item, index) => {
+    const randomizeBugs = (targetIndex) => {
+        const newBugs = bugs.map((item, index) => {
             if (index === targetIndex) return !item;
             if (item) return true;
-            return Math.random() < 0.1;
+            return Math.random() < setting.bugRevive.reviveRate;
         });
         if (Math.random() < 0.5) {
-            newItems.push(true);
+            let addAmount = Math.floor(Math.random() * (setting.bugSpawn.maxAmount - setting.bugSpawn.minAmount + 1)) + setting.bugSpawn.minAmount;
+            for (let i = 0; i < addAmount; i++) {
+                newBugs.push(true);
+            }
         }
-        if (Math.random() < 0.2) {
-            newItems.push(true);
-        }
-        if (newItems.every((item) => { return !item })) {
+        if (newBugs.every((item) => { return !item })) {
             alert("all fixed LOL");
         }
-        setItems(newItems);
+        setBugs(newBugs);
     }
 
     return (
-        <FormGroup sx={{m:5}}>
-            {items.map((item, index) => (
+        <FormGroup sx={{ m: 5 }}>
+            <code>bug count: {bugs.length}</code>
+            {
+                bugs.length > setting.exitThreshold
+                    ? <Button variant="contained" onClick={() => {
+                        window.location.replace(setting.redirectUrl);
+                    }}>fk this shit i'm out</Button>
+                    : null
+            }
+            {bugs.map((item, index) => (
                 <FormControlLabel
                     control={
                         <Switch
                             checked={item}
                             onChange={() => {
-                                randomizeItems(index);
+                                randomizeBugs(index);
                             }}
                         />
                     }
